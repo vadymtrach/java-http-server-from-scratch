@@ -10,11 +10,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MainTest {
+class RequestReaderTest {
     @Test
     void throwsWhenStreamIsEmpty(){
         InputStream input = InputStream.nullInputStream();
-        assertThrows(IOException.class, () -> Main.readRequestHead(input));
+        assertThrows(IOException.class, () -> RequestReader.readRequestHead(input));
     }
 
     @Test
@@ -26,7 +26,7 @@ class MainTest {
                 "Accept: */*");
 
         InputStream input = createInputStream(request);
-        List<String> actual = Main.readRequestHead(input);
+        List<String> actual = RequestReader.readRequestHead(input);
 
         assertEquals(expected, actual);
     }
@@ -38,7 +38,7 @@ class MainTest {
                 .formatted(expected.getBytes(StandardCharsets.UTF_8).length, expected);
 
         InputStream input = createInputStream(request);
-        Main.readRequestHead(input);
+        RequestReader.readRequestHead(input);
 
         String body = new String(input.readAllBytes(), StandardCharsets.UTF_8);
         assertEquals(expected, body);
@@ -48,14 +48,14 @@ class MainTest {
     void throwsWhenStreamEndsBeforeEmptyLine(){
         String request = "GET / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.18.0\r\n";
         InputStream input = createInputStream(request);
-        assertThrows(IOException.class, () -> Main.readRequestHead(input));
+        assertThrows(IOException.class, () -> RequestReader.readRequestHead(input));
     }
 
     @Test
     void throwsWhenStreamEndsMidLine(){
         String request = "GET / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Ag";
         InputStream input = createInputStream(request);
-        assertThrows(IOException.class, () -> Main.readRequestHead(input));
+        assertThrows(IOException.class, () -> RequestReader.readRequestHead(input));
     }
 
     @Test
@@ -67,7 +67,7 @@ class MainTest {
                 "Accept: */*");
 
         InputStream input = createInputStream(request);
-        List<String> actual = Main.readRequestHead(input);
+        List<String> actual = RequestReader.readRequestHead(input);
 
         assertEquals(expected, actual);
     }
@@ -81,7 +81,7 @@ class MainTest {
                 "Accept: */*");
 
         InputStream input = createInputStream(request);
-        List<String> actual = Main.readRequestHead(input);
+        List<String> actual = RequestReader.readRequestHead(input);
         assertEquals(expected, actual);
 
     }

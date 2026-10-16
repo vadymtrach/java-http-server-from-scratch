@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -14,7 +13,7 @@ public class Main {
             while(true){
                 try(Socket socket = serverSocket.accept()) {
                     InputStream input = socket.getInputStream();
-                    List<String> requestLines = readRequestHead(input);
+                    List<String> requestLines = RequestReader.readRequestHead(input);
 
                     requestLines.forEach(System.out::println);
                 } catch (Exception e){
@@ -24,31 +23,6 @@ public class Main {
             }
 
         }
-    }
-
-    static List<String> readRequestHead(InputStream input) throws IOException {
-        List<String> requestLines = new ArrayList<>();
-        StringBuilder lineBuilder = new StringBuilder();
-        int currentByte = input.read();
-
-        while (currentByte != -1){
-            if (currentByte == '\n'){
-                if (lineBuilder.isEmpty()) {
-                    if (!requestLines.isEmpty()){
-                        return requestLines;
-                    }
-                } else{
-                    requestLines.add(lineBuilder.toString());
-                    lineBuilder.setLength(0);
-                }
-
-            }
-            else if (currentByte != '\r'){
-                lineBuilder.append((char) currentByte);
-            }
-            currentByte = input.read();
-        }
-        throw new IOException("Connection was terminated unexpectedly");
     }
 
 
