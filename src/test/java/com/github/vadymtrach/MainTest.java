@@ -58,6 +58,35 @@ class MainTest {
         assertThrows(IOException.class, () -> Main.readRequestHead(input));
     }
 
+    @Test
+    void acceptsLineFeedWithoutCarriageReturn() throws IOException {
+        String request = "GET / HTTP/1.1\nHost: localhost:8080\nUser-Agent: curl/8.18.0\nAccept: */*\n\n";
+        List<String> expected = List.of("GET / HTTP/1.1",
+                "Host: localhost:8080",
+                "User-Agent: curl/8.18.0",
+                "Accept: */*");
+
+        InputStream input = createInputStream(request);
+        List<String> actual = Main.readRequestHead(input);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void WithBlankLines() throws IOException {
+        String request = "\r\n\r\n\r\nGET / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.18.0\r\nAccept: */*\r\n\r\n";
+        List<String> expected = List.of("GET / HTTP/1.1",
+                "Host: localhost:8080",
+                "User-Agent: curl/8.18.0",
+                "Accept: */*");
+
+        InputStream input = createInputStream(request);
+        List<String> actual = Main.readRequestHead(input);
+        assertEquals(expected, actual);
+
+    }
+
+
 
     private static InputStream createInputStream(String string){
         return new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8));

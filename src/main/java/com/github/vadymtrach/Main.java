@@ -34,7 +34,9 @@ public class Main {
         while (currentByte != -1){
             if (currentByte == '\n'){
                 if (lineBuilder.isEmpty()) {
-                    return requestLines;
+                    if (!requestLines.isEmpty()){
+                        return requestLines;
+                    }
                 } else{
                     requestLines.add(lineBuilder.toString());
                     lineBuilder.setLength(0);
