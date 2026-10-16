@@ -15,6 +15,7 @@ public class Main {
                 try(Socket socket = serverSocket.accept()) {
                     InputStream input = socket.getInputStream();
                     List<String> requestLines = readRequestHead(input);
+
                     requestLines.forEach(System.out::println);
                 } catch (Exception e){
                     System.out.println(e);
@@ -25,7 +26,7 @@ public class Main {
         }
     }
 
-    private static List<String> readRequestHead(InputStream input) throws IOException {
+    static List<String> readRequestHead(InputStream input) throws IOException {
         List<String> requestLines = new ArrayList<>();
         StringBuilder lineBuilder = new StringBuilder();
         int currentByte = input.read();
