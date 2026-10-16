@@ -20,17 +20,46 @@ class MainTest {
     @Test
     void returnsHeaderLinesForRequestWithoutBody() throws IOException {
         String request = "GET / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.18.0\r\nAccept: */*\r\n\r\n";
-
-        InputStream input = new ByteArrayInputStream(request.getBytes(StandardCharsets.UTF_8));
         List<String> expected = List.of("GET / HTTP/1.1",
                 "Host: localhost:8080",
                 "User-Agent: curl/8.18.0",
                 "Accept: */*");
 
+        InputStream input = createInputStream(request);
         List<String> actual = Main.readRequestHead(input);
 
         assertEquals(expected, actual);
     }
 
+    @Test
+    void leavesBodyUnreadInStream() throws IOException {
+        String expected = "Hello, World!";
+        String request = "POST / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.18.0\r\nAccept: */*\r\nContent-Length: %d\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n%s"
+                .formatted(expected.getBytes(StandardCharsets.UTF_8).length, expected);
 
+        InputStream input = createInputStream(request);
+        Main.readRequestHead(input);
+
+        String body = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(expected, body);
+    }
+
+    @Test
+    void throwsWhenStreamEndsBeforeEmptyLine(){
+        String request = "GET / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.18.0\r\n";
+        InputStream input = createInputStream(request);
+        assertThrows(IOException.class, () -> Main.readRequestHead(input));
+    }
+
+    @Test
+    void throwsWhenStreamEndsMidLine(){
+        String request = "GET / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Ag";
+        InputStream input = createInputStream(request);
+        assertThrows(IOException.class, () -> Main.readRequestHead(input));
+    }
+
+
+    private static InputStream createInputStream(String string){
+        return new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8));
+    }
 }
