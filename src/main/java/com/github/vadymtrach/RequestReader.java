@@ -31,4 +31,10 @@ public class RequestReader {
         }
         throw new IOException("Connection was terminated unexpectedly");
     }
+
+    static byte[] readBody(InputStream input, int length) throws IOException {
+        byte[] body = input.readNBytes(length);
+        if (body.length != length) throw new IOException("Connection was terminated unexpectedly");
+        return body;
+    }
 }

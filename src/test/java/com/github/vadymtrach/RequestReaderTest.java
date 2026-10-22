@@ -83,7 +83,53 @@ class RequestReaderTest {
         InputStream input = createInputStream(request);
         List<String> actual = RequestReader.readRequestHead(input);
         assertEquals(expected, actual);
+    }
 
+    @Test
+    void returnsWholeBodyWhenLengthMatchesData() throws IOException {
+        String expected = "Hello, World!";
+        byte[] expectedBody = expected.getBytes(StandardCharsets.UTF_8);
+
+        InputStream input = createInputStream(expected);
+        byte[] body = RequestReader.readBody(input, expectedBody.length);
+        assertArrayEquals(expectedBody, body);
+    }
+
+    @Test
+    void leavesRestOfStreamUnread() throws IOException {
+        String body = "Hello, World!";
+        String tail = "GET / HTTP/1.1\r\nHost: localhost:8080";
+        String request = body + tail;
+        InputStream input = createInputStream(request);
+
+        byte[] expectedBody = body.getBytes(StandardCharsets.UTF_8);
+
+        byte[] actualBody = RequestReader.readBody(input, expectedBody.length);
+        byte[] actualTail = input.readAllBytes();
+
+        assertArrayEquals(expectedBody, actualBody);
+        assertArrayEquals(tail.getBytes(StandardCharsets.UTF_8), actualTail);
+    }
+
+    @Test
+    void throwsWhenStreamEndsBeforeBodyIsComplete(){
+        String body = "Hello, World!";
+        int bodyLength = body.getBytes(StandardCharsets.UTF_8).length;
+        int missingBytes = 1;
+        InputStream input = createInputStream(body);
+
+        assertThrows(IOException.class, () -> RequestReader.readBody(input, bodyLength + missingBytes));
+    }
+
+    @Test
+    void returnsEmptyBodyWhenLengthIsZero() throws IOException {
+        String tail = "GET / HTTP/1.1\r\nHost: localhost:8080";
+
+        InputStream input = createInputStream(tail);
+        byte[] actualBody = RequestReader.readBody(input, 0);
+        byte[] actualTail  = input.readAllBytes();
+        assertArrayEquals(new byte[0], actualBody);
+        assertArrayEquals(tail.getBytes(StandardCharsets.UTF_8), actualTail);
     }
 
 
