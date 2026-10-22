@@ -73,7 +73,7 @@ class RequestReaderTest {
     }
 
     @Test
-    void WithBlankLines() throws IOException {
+    void skipsEmptyLinesBeforeRequestLine() throws IOException {
         String request = "\r\n\r\n\r\nGET / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/8.18.0\r\nAccept: */*\r\n\r\n";
         List<String> expected = List.of("GET / HTTP/1.1",
                 "Host: localhost:8080",
