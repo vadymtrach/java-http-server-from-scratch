@@ -157,10 +157,42 @@ class RequestReaderTest {
         }
 
         @Test
-        void stripsWhitespaceAroundValue() throws BadRequestException {
+        void stripsSpacesAroundValue() throws BadRequestException {
             Map<String, List<String>> expected = Map.of("Host", List.of("localhost"));
             List<String> lines = List.of("Host:    localhost    ");
 
+            Map<String, List<String>> actual = RequestReader.parseHeaders(lines);
+            assertEquals(expected, actual);
+        }
+
+        @Test
+        void stripsTabsAroundValue() throws BadRequestException {
+            Map<String, List<String>> expected = Map.of("Host", List.of("localhost"));
+            List<String> lines = List.of("Host:\tlocalhost\t");
+            Map<String, List<String>> actual = RequestReader.parseHeaders(lines);
+            assertEquals(expected, actual);
+        }
+
+        @Test
+        void keepsNonBreakingSpaceAroundValue() throws BadRequestException {
+            Map<String, List<String>> expected = Map.of("Host", List.of("\u00A0localhost\u00A0"));
+            List<String> lines = List.of("Host: \u00A0localhost\u00A0 ");
+            Map<String, List<String>> actual = RequestReader.parseHeaders(lines);
+            assertEquals(expected, actual);
+        }
+
+        @Test
+        void acceptsEmptyValue() throws BadRequestException {
+            Map<String, List<String>> expected = Map.of("Host", List.of(""));
+            List<String> lines = List.of("Host:");
+            Map<String, List<String>> actual = RequestReader.parseHeaders(lines);
+            assertEquals(expected, actual);
+        }
+
+        @Test
+        void returnsEmptyValueWhenOnlyWhitespace() throws BadRequestException {
+            Map<String, List<String>> expected = Map.of("Host", List.of(""));
+            List<String> lines = List.of("Host:\t \t");
             Map<String, List<String>> actual = RequestReader.parseHeaders(lines);
             assertEquals(expected, actual);
         }

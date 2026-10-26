@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 public class RequestReader {
     private static final String TOKEN_SPECIAL_CHARS = "!#$%&'*+-.^_`|~";
+
     static List<String> readRequestHead(InputStream input) throws IOException {
         List<String> requestLines = new ArrayList<>();
         StringBuilder lineBuilder = new StringBuilder();
@@ -53,16 +54,31 @@ public class RequestReader {
                 if (!isTokenChar(c)) throw new BadRequestException("Invalid character in header name: " + (int) c);
             }
 
-            String value = line.substring(index + 1).strip();
+            String value = trimOptionalWhitespace(line.substring(index + 1));
             headersMap.computeIfAbsent(key, k -> new ArrayList<>())
                     .add(value);
         }
         return headersMap;
     }
 
+    private static String trimOptionalWhitespace(String value){
+        int left = 0, right = value.length();
+        while (left < right && isOptionalWhitespace(value.charAt(left))){
+            left++;
+        }
+        while (right > left && isOptionalWhitespace(value.charAt(right - 1))){
+            right--;
+        }
+        return value.substring(left, right);
+    }
+
     private static boolean isTokenChar(char c){
         return (c >= '0' && c <= '9')
                 || (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z')
                 || TOKEN_SPECIAL_CHARS.indexOf(c) != -1;
+    }
+
+    private static boolean isOptionalWhitespace(char c){
+        return c == ' ' || c == '\t';
     }
 }
